@@ -6,7 +6,7 @@ const router = express.Router()
 // This handles the route /api/hubs
 // We no longer have to define the route prefix,
 // since it's defined when attaching to the main router in `index.js`
-router.get("/", (req, res) => {
+router.get("/",  (req, res) => {
 	// query strings allow us to pass generic key/values not specific to the resource.
 	// they are part of the URL, everything after the question mark (?).
 	// e.g. /api/hubs?sortBy=name&limit=5
@@ -173,5 +173,30 @@ router.post("/:id/messages", (req, res) => {
 			})
 		})
 })
+
+
+// a middleware function that ensures an ID exists before trying to use it
+function validateHubID(){
+	return (req, res, next) =>{
+		hubs.findById(req.params.id)
+		.then((hub) => {
+			// make sure the hub actually exists before we try to return it
+			if (hub) {
+				// res.status(200).json(hub)
+				next()
+			} else {
+				res.status(404).json({
+					message: "Hub not found",
+				})
+			}
+		})
+			.catch((error) => {
+				console.log(error)
+				res.status(500).json({
+					message: "Error retrieving the hub",
+				})
+			})
+	}
+}
 
 module.exports = router
